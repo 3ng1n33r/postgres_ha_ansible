@@ -1,0 +1,3 @@
+---
+dnsmasq_service_name: dnsmasq
+networkmanager_service_name: NetworkManager

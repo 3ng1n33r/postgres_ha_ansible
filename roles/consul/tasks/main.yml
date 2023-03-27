@@ -1,0 +1,80 @@
+---
+- name: Install dependencies.
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items:
+    - unzip
+
+- name: Check Consul exist.
+  stat:
+    path: "{{ consul_bin_path }}"
+  register: consul_check
+
+- name: Download and unarchive Consul into temporary location.
+  unarchive:
+    src: "{{ consul_download_url }}"
+    dest: /tmp
+    remote_src: true
+    mode: 0755
+  when: not consul_check.stat.exists
+
+- name: Move Consul binary into place.
+  copy:
+    src: "/tmp/consul"
+    dest: "{{ consul_bin_path }}"
+    mode: 0755
+    remote_src: true
+  notify: restart {{ consul_service_name }}
+  when: not consul_check.stat.exists
+
+- name: Ensure group Consul exists.
+  group:
+    name: "{{ consul_group }}"
+    state: present
+
+- name: Create Consul user.
+  user:
+    name: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    state: present
+    system: true
+
+- name: Create Consul dirs.
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ consul_user }}"
+  with_items:
+    - "{{ consul_config_dir }}"
+    - "{{ consul_data_dir }}"
+
+- name: Copy the Consul config file.
+  template:
+    src: server-config.json.j2
+    dest: "{{ consul_config_dir }}/config.json"
+    mode: 0644
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+  notify: restart {{ consul_service_name }}
+
+- name: Copy the Consul systemd unit file.
+  template:
+    src: consul.service.j2
+    dest: /etc/systemd/system/consul.service
+    mode: 0644
+  register: consul_service
+
+- name: Reload systemd daemon if unit file is changed.
+  systemd:
+    daemon_reload: true
+  notify: restart {{ consul_service_name }}
+  when: consul_service is changed
+
+- name: Ensure Consul is running and enabled at boot.
+  service:
+    name: "{{ consul_service_name }}"
+    state: started
+    enabled: true

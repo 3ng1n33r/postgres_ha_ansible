@@ -1,0 +1,69 @@
+name: {{ ansible_fqdn }}
+scope: postgresdb
+
+watchdog:
+  mode: off
+
+consul:
+  host: "localhost:8500"
+  register_service: true
+  #token: <consul-acl-token>
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: "{{ ansible_default_ipv4.address }}:8008"
+  auth: 'patrest:password'
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        archive_mode: "on"
+        wal_level: hot_standby
+        max_wal_senders: 10
+        wal_keep_segments: 8
+        archive_timeout: 1800s
+        max_replication_slots: 5
+        hot_standby: "on"
+        wal_log_hints: "on"
+
+  initdb:
+  - encoding: UTF8
+  - data-checksums
+
+  pg_hba:
+    - local all all trust
+    - host replication replicator 192.168.10.0/24 md5
+    - host replication replicator 192.168.20.0/24 md5
+    - host replication replicator 192.168.30.0/24 md5
+    - host replication replicator 127.0.0.1/32 trust
+    - host all all 0.0.0.0/0 md5
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: "{{ ansible_default_ipv4.address }}:5432"
+  data_dir: {{ postgres_data_dir }}/data/
+  bin_dir: {{ postgres_bin_dir }}
+  pg_hba:
+    - local all all trust
+    - host replication replicator 192.168.10.0/24 md5
+    - host replication replicator 192.168.20.0/24 md5
+    - host replication replicator 192.168.30.0/24 md5
+    - host replication replicator 127.0.0.1/32 trust
+    - host all all 0.0.0.0/0 md5
+  pgpass: {{ postgres_data_dir }}/.pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: password
+    superuser:
+      username: postgres
+      password: password
+    rewind:
+      username: postgres
+      password: password

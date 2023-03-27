@@ -1,0 +1,31 @@
+---
+- name: Install dependencies.
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items:
+    - dnsmasq
+
+- name: Copy the Dnsmasq config file.
+  template:
+    src: 10-consul.j2
+    dest: "/etc/dnsmasq.d/10-consul"
+    mode: 0644
+    owner: root
+  notify: restart {{ dnsmasq_service_name }}
+
+- name: Append DNS 127.0.0.1 to resolv.conf.
+  lineinfile:
+    path: "/etc/dhcp/dhclient.conf"
+    line: "prepend domain-name-servers 127.0.0.1;"
+    owner: root
+    insertafter: EOF
+    state: present
+  notify: restart {{ networkmanager_service_name }}
+
+- name: Ensure Dnsmasq is running and enabled at boot.
+  service:
+    name: "{{ dnsmasq_service_name }}"
+    state: started
+    enabled: true

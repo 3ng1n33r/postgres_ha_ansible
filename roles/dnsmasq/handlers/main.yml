@@ -1,0 +1,10 @@
+---
+- name: restart {{ dnsmasq_service_name }}
+  service:
+    name: "{{ dnsmasq_service_name }}"
+    state: restarted
+
+- name: restart {{ networkmanager_service_name }}
+  service:
+    name: "{{ networkmanager_service_name }}"
+    state: restarted

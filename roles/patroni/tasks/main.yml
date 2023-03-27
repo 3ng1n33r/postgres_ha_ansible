@@ -1,0 +1,62 @@
+---
+- name: Install dependencies.
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items:
+    - python3
+    - python3-devel
+    - python3-pip
+
+- name: Pip self-update.
+  pip:
+    name: pip
+    state: latest
+    executable: /usr/bin/pip3
+
+- name: Install pip dependencies.
+  pip:
+    name: "{{ item }}"
+    state: present
+    executable: /usr/bin/pip3
+  with_items:
+    - patroni[consul]
+    - psycopg2-binary
+
+- name: Create Patroni dirs.
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ patroni_user }}"
+  with_items:
+    - "{{ patroni_config_dir }}"
+
+- name: Copy the Patroni config file.
+  template:
+    src: patroni.yml.j2
+    dest: "{{ patroni_config_dir }}/patroni.yml"
+    mode: 0644
+    owner: "{{ patroni_user }}"
+    group: "{{ patroni_group }}"
+  notify: restart {{ patroni_service_name }}
+
+- name: Copy the Patroni systemd unit file.
+  template:
+    src: patroni.service.j2
+    dest: /etc/systemd/system/patroni.service
+    mode: 0644
+  register: patroni_service
+
+- name: Reload systemd daemon if unit file is changed.
+  systemd:
+    daemon_reload: true
+  notify: restart {{ patroni_service_name }}
+  when: patroni_service is changed
+
+- name: Ensure Patroni is running and enabled at boot.
+  service:
+    name: "{{ patroni_service_name }}"
+    state: started
+    enabled: true

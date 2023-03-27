@@ -1,0 +1,17 @@
+---
+# consul release
+consul_version: '1.15.1'
+# https://hashicorp-releases.yandexcloud.net/consul/1.15.1/consul_1.15.1_linux_amd64.zip
+consul_download_url: https://hashicorp-releases.yandexcloud.net/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip
+
+consul_bin_path: /usr/bin/consul
+consul_config_dir: /etc/consul.d
+consul_data_dir: /var/lib/consul
+
+consul_user: consul
+consul_group: consul
+
+consul_service_name: consul
+
+#generate consul token using 'openssl rand -base64 32' command or 'consul keygen'
+consul_token: nl8GruSXsCGV1E4Nvi38lPmCqwydm4llAcRLd6TnMnQ=

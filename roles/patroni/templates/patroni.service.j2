@@ -1,0 +1,17 @@
+[Unit]
+Description=Runners to orchestrate a high-availability PostgreSQL
+Docummentation=https://github.com/zalando/patroni/tree/master/docs
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User={{ patroni_user }}
+Group={{ patroni_group }}
+ExecStart={{ patroni_bin_path }} {{ patroni_config_dir}}/patroni.yml
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=process
+TimeoutSec=30
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

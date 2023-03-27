@@ -1,0 +1,24 @@
+{
+  "datacenter": "dc1",
+  "data_dir": "{{ consul_data_dir }}",
+  "bind_addr": "0.0.0.0",
+  "client_addr": "0.0.0.0",
+  "domain": "consul",
+  "enable_local_script_checks": true,
+  "dns_config": {
+    "enable_truncate": true,
+    "only_passing": true
+  },
+  "recursors": [ "127.0.0.1" ],
+  "enable_syslog": true,
+  "encrypt": "{{ consul_token }}",
+  "leave_on_terminate": true,
+  "log_level": "INFO",
+  "rejoin_after_leave": true,
+  "retry_join": {{ lookup('env', 'CONSUL_JOIN_HOSTS') }},
+  "server": true,
+  "bootstrap_expect": 3,
+  "ui_config": { 
+    "enabled": true
+  }
+}

@@ -1,0 +1,11 @@
+---
+- name: Install and configure PostgreSQL HA.
+  hosts: all
+  become: true
+
+  roles:
+    - consul
+    - dnsmasq
+    - postgres
+    - patroni
+     
