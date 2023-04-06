@@ -6,6 +6,8 @@
     state: present
   with_items:
     - dnsmasq
+  tags:
+    - dnsmasq
 
 - name: Copy the Dnsmasq config file.
   template:
@@ -14,6 +16,8 @@
     mode: 0644
     owner: root
   notify: restart {{ dnsmasq_service_name }}
+  tags:
+    - dnsmasq
 
 - name: Append DNS 127.0.0.1 to resolv.conf.
   lineinfile:
@@ -23,9 +27,13 @@
     insertafter: EOF
     state: present
   notify: restart {{ networkmanager_service_name }}
+  tags:
+    - dnsmasq
 
 - name: Ensure Dnsmasq is running and enabled at boot.
   service:
     name: "{{ dnsmasq_service_name }}"
     state: started
     enabled: true
+  tags:
+    - dnsmasq

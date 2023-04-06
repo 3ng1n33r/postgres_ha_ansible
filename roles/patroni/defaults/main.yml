@@ -2,11 +2,11 @@
 patroni_bin_path: /usr/local/bin/patroni
 patroni_config_dir: /etc/patroni
 
-patroni_user: postgres
-patroni_group: postgres
+patroni_version: '3.0.2'
 
-postgres_data_dir: /var/lib/pgsql/12
-postgres_bin_dir: /usr/pgsql-12/bin/
+postgres_version: 12
+#postgres_data_dir: /var/lib/pgsql/data
+postgres_data_dir: /data/patroni
+postgres_bin_dir: /usr/pgsql-{{ postgres_version }}/bin/
 
 patroni_service_name: patroni
-

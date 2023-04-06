@@ -23,7 +23,7 @@ resource "yandex_compute_instance" "this" {
     initialize_params {
       image_id = "${data.yandex_compute_image.this.id}"
       size     = 10
-      type     = "network-ssd"
+      type     = "network-hdd"
     }
   }
 

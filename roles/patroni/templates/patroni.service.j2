@@ -5,8 +5,8 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-User={{ patroni_user }}
-Group={{ patroni_group }}
+User=postgres
+Group=postgres
 ExecStart={{ patroni_bin_path }} {{ patroni_config_dir}}/patroni.yml
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=process

@@ -3,6 +3,8 @@
   yum:
     name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     state: present
+  tags:
+    - postgres
 
 - name: Install dependencies.
   yum:
@@ -12,4 +14,12 @@
   with_items:
     - postgresql12
     - postgresql12-server
+  tags:
+    - postgres
 
+- name: Stop service postgresql-12, if started.
+  service:
+    name: postgresql-12
+    state: stopped
+  tags:
+    - postgres

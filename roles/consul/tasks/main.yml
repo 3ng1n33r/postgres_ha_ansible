@@ -6,11 +6,15 @@
     state: present
   with_items:
     - unzip
+  tags:
+    - consul
 
 - name: Check Consul exist.
   stat:
     path: "{{ consul_bin_path }}"
   register: consul_check
+  tags:
+    - consul
 
 - name: Download and unarchive Consul into temporary location.
   unarchive:
@@ -19,6 +23,8 @@
     remote_src: true
     mode: 0755
   when: not consul_check.stat.exists
+  tags:
+    - consul
 
 - name: Move Consul binary into place.
   copy:
@@ -28,11 +34,15 @@
     remote_src: true
   notify: restart {{ consul_service_name }}
   when: not consul_check.stat.exists
+  tags:
+    - consul
 
 - name: Ensure group Consul exists.
   group:
     name: "{{ consul_group }}"
     state: present
+  tags:
+    - consul
 
 - name: Create Consul user.
   user:
@@ -40,6 +50,8 @@
     group: "{{ consul_group }}"
     state: present
     system: true
+  tags:
+    - consul
 
 - name: Create Consul dirs.
   file:
@@ -50,6 +62,8 @@
   with_items:
     - "{{ consul_config_dir }}"
     - "{{ consul_data_dir }}"
+  tags:
+    - consul
 
 - name: Copy the Consul config file.
   template:
@@ -59,6 +73,8 @@
     owner: "{{ consul_user }}"
     group: "{{ consul_group }}"
   notify: restart {{ consul_service_name }}
+  tags:
+    - consul
 
 - name: Copy the Consul systemd unit file.
   template:
@@ -66,15 +82,21 @@
     dest: /etc/systemd/system/consul.service
     mode: 0644
   register: consul_service
+  tags:
+    - consul
 
 - name: Reload systemd daemon if unit file is changed.
   systemd:
     daemon_reload: true
   notify: restart {{ consul_service_name }}
   when: consul_service is changed
+  tags:
+    - consul
 
 - name: Ensure Consul is running and enabled at boot.
   service:
     name: "{{ consul_service_name }}"
     state: started
     enabled: true
+  tags:
+    - consul

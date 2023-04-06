@@ -7,5 +7,11 @@
     - consul
     - dnsmasq
     - postgres
+
+- name: Install and initializing Pantroni.
+  hosts: all
+  become: true
+  serial: 1
+
+  roles:
     - patroni
-     

@@ -8,12 +8,16 @@
     - python3
     - python3-devel
     - python3-pip
+  tags:
+    - patroni
 
 - name: Pip self-update.
   pip:
     name: pip
     state: latest
     executable: /usr/bin/pip3
+  tags:
+    - patroni
 
 - name: Install pip dependencies.
   pip:
@@ -21,26 +25,34 @@
     state: present
     executable: /usr/bin/pip3
   with_items:
-    - patroni[consul]
-    - psycopg2-binary
+    - patroni[consul]=={{ patroni_version }}
+    - psycopg[binary]
+  tags:
+    - patroni
 
 - name: Create Patroni dirs.
   file:
     path: "{{ item }}"
     state: directory
-    mode: 0755
-    owner: "{{ patroni_user }}"
+    mode: 0750
+    owner: postgres
+    group: postgres
   with_items:
     - "{{ patroni_config_dir }}"
+    - "{{ postgres_data_dir }}"
+  tags:
+    - patroni
 
 - name: Copy the Patroni config file.
   template:
     src: patroni.yml.j2
     dest: "{{ patroni_config_dir }}/patroni.yml"
-    mode: 0644
-    owner: "{{ patroni_user }}"
-    group: "{{ patroni_group }}"
-  notify: restart {{ patroni_service_name }}
+    mode: 0640
+    owner: postgres
+    group: postgres
+#  notify: restart {{ patroni_service_name }}
+  tags:
+    - patroni
 
 - name: Copy the Patroni systemd unit file.
   template:
@@ -48,15 +60,21 @@
     dest: /etc/systemd/system/patroni.service
     mode: 0644
   register: patroni_service
+  tags:
+    - patroni
 
 - name: Reload systemd daemon if unit file is changed.
   systemd:
     daemon_reload: true
-  notify: restart {{ patroni_service_name }}
+#  notify: restart {{ patroni_service_name }}
   when: patroni_service is changed
+  tags:
+    - patroni
 
 - name: Ensure Patroni is running and enabled at boot.
   service:
     name: "{{ patroni_service_name }}"
     state: started
     enabled: true
+  tags:
+    - patroni
